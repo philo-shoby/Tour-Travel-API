@@ -67,7 +67,29 @@ catalogueRouter.get('/users', verifyFirebaseToken, (req, res) => {
 })
 
 // Update the catalog/bookings/details of the user
-catalogueRouter.post('/users', verifyFirebaseToken, (req, res) => {
+catalogueRouter.put('/users', verifyFirebaseToken, (req, res) => {
+    mongoDb.connect()
+    .then(() => {
+        const database = mongoDb.db('tour_travel');
+        const users = database.collection('user-data');
+        let filter = { uid : req.body.uid}
+        let update = { $set: req.body }; 
+        let options = { upsert: true };
+        return users.updateOne(filter, update, options);
+    })
+    .then((data) => {
+        res.json(data);
+    })
+    .catch((err) => {
+        if (err) {
+          console.error('Error connecting to MongoDB:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+    })
+})
+
+// Creates new user accounts
+catalogueRouter.post('/users', (req, res) => {
     mongoDb.connect()
     .then(() => {
         const database = mongoDb.db('tour_travel');
